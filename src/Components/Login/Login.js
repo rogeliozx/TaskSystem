@@ -12,7 +12,9 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-
+import axios from 'axios';
+import {Redirect} from 'react-router-dom';
+import { withRouter } from 'react-router-dom'
 function Copyright() {
   return (
     <Typography variant="body2" color="textSecondary" align="center">
@@ -47,17 +49,43 @@ const useStyles = makeStyles(theme => ({
   },
   form: {
     width: '100%', // Fix IE 11 issue.
-    marginTop: theme.spacing(3),
+    marginTop: theme.spacing(1),
   },
   submit: {
     margin: theme.spacing(3, 0, 2),
   },
 }));
 
-export default function SignUp() {
+export default function SignIn() {
+  const [values, setValues] = React.useState({
+    email: '',
+    password: '',
+  });
+  const handleChange = name => event => {
+    setValues({ ...values, [name]: event.target.value });
+    console.log(values)
+
+  };
+
+let status=window.localStorage.getItem('id');;
   const classes = useStyles();
 
+  async function Login(param1, param2) {
+    debugger;
+    let mail = param1;
+    let pw = param2;
+    let res = await axios.post("http://localhost:4800/api/login", { email: mail, password: pw });
+    let respuesta = res;
+    localStorage.setItem('role', res.data.role)
+    localStorage.setItem('id', res.data.userId)
+    return respuesta;
+  };
+if(status===null){
+
+
+
   return (
+
     <Container component="main" maxWidth="xs">
       <CssBaseline />
       <div className={classes.paper}>
@@ -65,84 +93,68 @@ export default function SignUp() {
           <LockOutlinedIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Sign up
+          Login
         </Typography>
-        <form className={classes.form} noValidate>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                autoComplete="fname"
-                name="firstName"
-                variant="outlined"
-                required
-                fullWidth
-                id="firstName"
-                label="First Name"
-                autoFocus
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                id="lastName"
-                label="Last Name"
-                name="lastName"
-                autoComplete="lname"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                id="email"
-                label="Email Address"
-                name="email"
-                autoComplete="email"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                name="password"
-                label="Password"
-                type="password"
-                id="password"
-                autoComplete="current-password"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <FormControlLabel
-                control={<Checkbox value="allowExtraEmails" color="primary" />}
-                label="I want to receive inspiration, marketing promotions and updates via email."
-              />
-            </Grid>
-          </Grid>
+        <form className={classes.form}    onSubmit={
+          async () => {
+            if (values.email !== '' && values.password !== '') {
+              let finaly = await Login(values.email, values.password);
+              window.location.reload();
+            }
+          }} action='#' >
+          <TextField
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            label="Email Address"
+            name="email"
+            autoComplete="email"
+            autoFocus
+            onChange={handleChange('email')}
+          />
+          <TextField
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            name="password"
+            label="Password"
+            type="password"
+            id="password"
+            autoComplete="current-password"
+            onChange={handleChange('password')}
+          />
+          <FormControlLabel
+            control={<Checkbox value="remember" color="primary" />}
+            label="Remember me"
+          />
           <Button
-            type="submit"
+          type='submit'
             fullWidth
             variant="contained"
             color="primary"
             className={classes.submit}
+
           >
-            Sign Up
+            Sign In
           </Button>
-          <Grid container justify="flex-end">
+          <Grid container>
             <Grid item>
-              <Link href="/" variant="body2">
-                Already have an account? Sign in
+              <Link href="/sign" variant="body2">
+                {"Don't have an account? Sign Up"}
               </Link>
             </Grid>
           </Grid>
         </form>
       </div>
-      <Box mt={5}>
+      <Box mt={8}>
         <Copyright />
       </Box>
     </Container>
   );
+} else if (status !=null) {
+  return <Redirect to='/Dashboard'/>
+}
 }
